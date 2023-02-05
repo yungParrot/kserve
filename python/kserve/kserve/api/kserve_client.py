@@ -24,6 +24,8 @@ from ..constants import constants
 from ..models import V1alpha1InferenceGraph
 from ..utils import utils
 
+from opentelemetry import trace
+
 
 class KServeClient(object):
 
@@ -47,6 +49,10 @@ class KServeClient(object):
         self.core_api = client.CoreV1Api()
         self.app_api = client.AppsV1Api()
         self.api_instance = client.CustomObjectsApi()
+
+        tracer = trace.get_tracer(__name__)
+        with tracer.start_as_current_span("KServeClient") as span:
+            span.set_attribute("created object", str(self))
 
     def set_credentials(self, storage_type, namespace=None, credentials_file=None,
                         service_account=constants.DEFAULT_SA_NAME, **kwargs):
